@@ -26,7 +26,7 @@ func main() {
 var debugEnabled = false
 
 func start() error {
-	if runtime.GOOS != "windows" && runtime.GOOS != "linux" {
+	if runtime.GOOS != "windows" && runtime.GOOS != "linux" runtime.GOOS != "darwin" {
 		return fmt.Errorf("Unsupported OS '%v'", runtime.GOOS)
 	}
 	if runtime.GOARCH != "amd64" {
@@ -95,13 +95,13 @@ func build() error {
 	}
 
 	// Make the dir for the target
-	if err := os.MkdirAll(target, os.ModeDir); err != nil {
+	if err := os.MkdirAll(target, 0755); err != nil {
 		return err
 	}
 
 	// Run qmake TODO: put behind flag
 	qmakeArgs := []string{}
-	if runtime.GOOS == "linux" {
+	if runtime.GOOS == "linux" || runtime.GOOS == "darwin" {
 		if target == "debug" {
 			qmakeArgs = []string{"CONFIG+=debug"}
 		} else {
@@ -123,7 +123,7 @@ func build() error {
 	}
 
 	// Chmod on linux
-	if runtime.GOOS == "linux" {
+	if runtime.GOOS == "linux" || runtime.GOOS == "darwin" {
 		if err = os.Chmod(filepath.Join(target, "qt_cef_poc"), 0755); err != nil {
 			return err
 		}
@@ -169,7 +169,7 @@ func pkg() error {
 	}
 
 	// And the locales dir
-	if err = os.MkdirAll(filepath.Join(deployDir, "locales"), os.ModeDir); err != nil {
+	if err = os.MkdirAll(filepath.Join(deployDir, "locales"), 0755); err != nil {
 		return err
 	}
 	err = copyEachToDirIfNotPresent(filepath.Join(target, "locales"), filepath.Join(deployDir, "locales"), "en-US.pak")
@@ -304,7 +304,8 @@ func copyResourcesLinux(qmakePath string, target string) error {
 	}
 	// Everything read only except by owner
 	// Copy over some Qt DLLs
-	err := copyAndChmodEachToDirIfNotPresent(0644, filepath.Rel(filepath.Dir(qmakePath), "../lib"), target,
+	qmakeLibPath, _ := filepath.Rel(filepath.Dir(qmakePath), "../lib")
+	err := copyAndChmodEachToDirIfNotPresent(0644, qmakeLibPath, target,
 		"libQt5Core.so",
 		"libQt5Gui.so",
 		"libQt5Widgets.so",
@@ -408,7 +409,7 @@ func copyResourcesWindows(qmakePath string, target string) error {
 
 	// And CEF locales
 	targetLocaleDir := filepath.Join(target, "locales")
-	if err = os.MkdirAll(targetLocaleDir, os.ModeDir); err != nil {
+	if err = os.MkdirAll(targetLocaleDir, 0755); err != nil {
 		return err
 	}
 	err = copyEachToDirIfNotPresent(filepath.Join(cefResDir, "locales"), targetLocaleDir, "en-US.pak")

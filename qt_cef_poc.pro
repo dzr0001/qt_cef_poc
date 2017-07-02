@@ -24,7 +24,7 @@ HEADERS  += \
 release:PROFILE = Release
 debug:PROFILE = Debug
 
-INCLUDEPATH += $$(CEF_DIR)
+INCLUDEPATH += $$(CEF_DIR) /opt/X11/include
 
 win32 {
     SOURCES += \
@@ -43,12 +43,10 @@ win32 {
 
 unix {
     SOURCES += \
-        cef_linux.cc \
-        cef_widget_linux.cc \
-        cef_embed_window_linux.cc
+        cef_linux.cc 
     HEADERS += \
         cef_embed_window_linux.h
-    LIBS += -lX11
+    LIBS += -L/usr/X11/lib -lX11
     LIBS += -L$$(CEF_DIR)/$$PROFILE -lcef
     LIBS += -L$$(CEF_DIR)/libcef_dll_wrapper -lcef_dll_wrapper_$$PROFILE
     release:DESTDIR = release
